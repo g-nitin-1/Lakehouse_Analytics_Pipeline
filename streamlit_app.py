@@ -22,13 +22,20 @@ elif Path("output_big").exists():
 else:
     default_output = "output"
 base_output = Path(st.sidebar.text_input("Output directory", value=default_output))
+output_exists = base_output.exists()
 default_input = (
     "data/raw/yellow_tripdata_2024-01.parquet"
     if Path("data/raw/yellow_tripdata_2024-01.parquet").exists()
     else "data/sample/orders.csv"
 )
-input_path = Path(st.sidebar.text_input("Input dataset", value=default_input))
-run_engine = st.sidebar.selectbox("Engine", ["polars", "spark"], index=0)
+input_path = Path(
+    st.sidebar.text_input(
+        "Input dataset (used only when generating output)",
+        value=default_input,
+        disabled=output_exists,
+    )
+)
+run_engine = st.sidebar.selectbox("Engine", ["polars", "spark"], index=0, disabled=output_exists)
 yellow_target = Path("data/raw/yellow_tripdata_2024-01.parquet")
 kpi_dir = base_output / "kpis"
 validation_dir = base_output / "validation"
@@ -109,6 +116,8 @@ if not base_output.exists():
         st.success(f"Output generated at: {base_output} in {elapsed:.1f}s")
         st.rerun()
     st.stop()
+else:
+    st.sidebar.success(f"Browsing existing output from: {base_output}")
 
 st.sidebar.markdown("Run pipeline first:")
 st.sidebar.code(
