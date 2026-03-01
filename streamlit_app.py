@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import polars as pl
 import streamlit as st
+
+# Allow imports from local src/ without editable install in Streamlit Cloud.
+SRC_PATH = Path(__file__).resolve().parent / "src"
+if SRC_PATH.exists():
+    sys.path.insert(0, str(SRC_PATH))
 
 st.set_page_config(page_title="Lakehouse KPI Browser", layout="wide")
 st.title("Lakehouse KPI Browser")
@@ -15,7 +21,30 @@ validation_dir = base_output / "validation"
 report_dir = base_output / "reports"
 
 if not base_output.exists():
-    st.error(f"Output directory not found: {base_output}")
+    st.warning(f"Output directory not found: {base_output}")
+    st.info("Generate demo outputs from sample data to use the dashboard.")
+    if st.button("Generate Demo Output"):
+        try:
+            from lakehouse_pipeline.cli import run_pipeline
+            from lakehouse_pipeline.config import PipelineConfig
+        except Exception as exc:  # pragma: no cover - runtime guard for cloud env
+            st.error(f"Unable to import pipeline modules: {exc}")
+            st.stop()
+
+        sample_input = Path("data/sample/orders.csv")
+        if not sample_input.exists():
+            st.error(f"Sample input not found: {sample_input}")
+            st.stop()
+
+        with st.spinner("Running sample pipeline..."):
+            run_pipeline(
+                PipelineConfig(input_path=sample_input, output_root=base_output),
+                engine="polars",
+                incremental=False,
+                full_refresh=True,
+            )
+        st.success(f"Demo output generated at: {base_output}")
+        st.rerun()
     st.stop()
 
 st.sidebar.markdown("Run pipeline first:")
