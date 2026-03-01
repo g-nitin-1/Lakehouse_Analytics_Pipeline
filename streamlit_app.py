@@ -16,6 +16,13 @@ st.title("Lakehouse KPI Browser")
 
 default_output = "output_big" if Path("output_big").exists() else "output"
 base_output = Path(st.sidebar.text_input("Output directory", value=default_output))
+default_input = (
+    "data/raw/yellow_tripdata_2024-01.parquet"
+    if Path("data/raw/yellow_tripdata_2024-01.parquet").exists()
+    else "data/sample/orders.csv"
+)
+input_path = Path(st.sidebar.text_input("Input dataset", value=default_input))
+run_engine = st.sidebar.selectbox("Engine", ["polars", "spark"], index=0)
 kpi_dir = base_output / "kpis"
 validation_dir = base_output / "validation"
 report_dir = base_output / "reports"
@@ -23,7 +30,24 @@ report_dir = base_output / "reports"
 if not base_output.exists():
     st.warning(f"Output directory not found: {base_output}")
     st.info("Generate demo outputs from sample data to use the dashboard.")
-    if st.button("Generate Demo Output"):
+    if st.button("Download yellow_tripdata_2024-01.parquet"):
+        try:
+            import urllib.request
+
+            target = Path("data/raw/yellow_tripdata_2024-01.parquet")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            url = (
+                "https://d37ci6vzurychx.cloudfront.net/trip-data/"
+                "yellow_tripdata_2024-01.parquet"
+            )
+            with st.spinner("Downloading yellow taxi dataset..."):
+                urllib.request.urlretrieve(url, target)
+            st.success(f"Downloaded: {target}")
+            st.rerun()
+        except Exception as exc:  # pragma: no cover
+            st.error(f"Download failed: {exc}")
+
+    if st.button("Generate Output"):
         try:
             from lakehouse_pipeline.cli import run_pipeline
             from lakehouse_pipeline.config import PipelineConfig
@@ -31,26 +55,25 @@ if not base_output.exists():
             st.error(f"Unable to import pipeline modules: {exc}")
             st.stop()
 
-        sample_input = Path("data/sample/orders.csv")
-        if not sample_input.exists():
-            st.error(f"Sample input not found: {sample_input}")
+        if not input_path.exists():
+            st.error(f"Input not found: {input_path}")
             st.stop()
 
-        with st.spinner("Running sample pipeline..."):
+        with st.spinner(f"Running pipeline on {input_path.name}..."):
             run_pipeline(
-                PipelineConfig(input_path=sample_input, output_root=base_output),
-                engine="polars",
+                PipelineConfig(input_path=input_path, output_root=base_output),
+                engine=run_engine,
                 incremental=False,
                 full_refresh=True,
             )
-        st.success(f"Demo output generated at: {base_output}")
+        st.success(f"Output generated at: {base_output}")
         st.rerun()
     st.stop()
 
 st.sidebar.markdown("Run pipeline first:")
 st.sidebar.code(
     "python -m lakehouse_pipeline.cli run "
-    "--input data/sample/orders.csv --output output --engine spark"
+    "--input data/raw/yellow_tripdata_2024-01.parquet --output output_big --engine spark"
 )
 
 
