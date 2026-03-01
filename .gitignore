@@ -1,0 +1,15 @@
+Assignment_Project1_Lakehouse_Analytics_Pipeline.pdf
+.venv/
+output/
+output_*/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+src/*.egg-info/
+
+# Large local/raw datasets (keep lightweight samples tracked)
+data/raw/*.parquet
