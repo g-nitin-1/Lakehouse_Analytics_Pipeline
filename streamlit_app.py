@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import time
 from pathlib import Path
 
 import polars as pl
@@ -14,7 +15,12 @@ if SRC_PATH.exists():
 st.set_page_config(page_title="Lakehouse KPI Browser", layout="wide")
 st.title("Lakehouse KPI Browser")
 
-default_output = "output_big" if Path("output_big").exists() else "output"
+if Path("output_web").exists():
+    default_output = "output_web"
+elif Path("output_big").exists():
+    default_output = "output_big"
+else:
+    default_output = "output"
 base_output = Path(st.sidebar.text_input("Output directory", value=default_output))
 default_input = (
     "data/raw/yellow_tripdata_2024-01.parquet"
@@ -23,26 +29,46 @@ default_input = (
 )
 input_path = Path(st.sidebar.text_input("Input dataset", value=default_input))
 run_engine = st.sidebar.selectbox("Engine", ["polars", "spark"], index=0)
+yellow_target = Path("data/raw/yellow_tripdata_2024-01.parquet")
 kpi_dir = base_output / "kpis"
 validation_dir = base_output / "validation"
 report_dir = base_output / "reports"
+MAX_PREVIEW_ROWS = 2000
+
+
+def _estimate_runtime_seconds(dataset: Path, engine: str) -> tuple[int, int]:
+    name = dataset.name.lower()
+    if "yellow_tripdata" in name:
+        return (45, 120) if engine == "polars" else (90, 240)
+    return (5, 20) if engine == "polars" else (10, 40)
+
+
+def _is_heavy_dataset(dataset: Path) -> bool:
+    return "yellow_tripdata" in dataset.name.lower()
+
 
 if not base_output.exists():
     st.warning(f"Output directory not found: {base_output}")
-    st.info("Generate demo outputs from sample data to use the dashboard.")
-    if st.button("Download yellow_tripdata_2024-01.parquet"):
+    low, high = _estimate_runtime_seconds(input_path, run_engine)
+    st.info(
+        f"Estimated runtime for current input/engine: ~{low}-{high} seconds "
+        f"(dataset: `{input_path.name}`, engine: `{run_engine}`)."
+    )
+
+    if yellow_target.exists():
+        st.success(f"Dataset ready: {yellow_target}")
+    elif st.button("Download yellow_tripdata_2024-01.parquet"):
         try:
             import urllib.request
 
-            target = Path("data/raw/yellow_tripdata_2024-01.parquet")
-            target.parent.mkdir(parents=True, exist_ok=True)
+            yellow_target.parent.mkdir(parents=True, exist_ok=True)
             url = (
                 "https://d37ci6vzurychx.cloudfront.net/trip-data/"
                 "yellow_tripdata_2024-01.parquet"
             )
             with st.spinner("Downloading yellow taxi dataset..."):
-                urllib.request.urlretrieve(url, target)
-            st.success(f"Downloaded: {target}")
+                urllib.request.urlretrieve(url, yellow_target)
+            st.success(f"Downloaded: {yellow_target}")
             st.rerun()
         except Exception as exc:  # pragma: no cover
             st.error(f"Download failed: {exc}")
@@ -59,6 +85,19 @@ if not base_output.exists():
             st.error(f"Input not found: {input_path}")
             st.stop()
 
+        if _is_heavy_dataset(input_path):
+            st.error(
+                "Generating outputs from yellow_tripdata inside Streamlit Cloud often exceeds "
+                "memory limits. Run big-data processing locally, then use lightweight "
+                "outputs in Cloud."
+            )
+            st.info(
+                "Cloud-safe option: set input to `data/sample/orders.csv` and click "
+                "Generate Output."
+            )
+            st.stop()
+
+        start = time.perf_counter()
         with st.spinner(f"Running pipeline on {input_path.name}..."):
             run_pipeline(
                 PipelineConfig(input_path=input_path, output_root=base_output),
@@ -66,7 +105,8 @@ if not base_output.exists():
                 incremental=False,
                 full_refresh=True,
             )
-        st.success(f"Output generated at: {base_output}")
+        elapsed = time.perf_counter() - start
+        st.success(f"Output generated at: {base_output} in {elapsed:.1f}s")
         st.rerun()
     st.stop()
 
@@ -75,10 +115,11 @@ st.sidebar.code(
     "python -m lakehouse_pipeline.cli run "
     "--input data/raw/yellow_tripdata_2024-01.parquet --output output_big --engine spark"
 )
+st.sidebar.markdown("For Streamlit Cloud, prefer curated artifacts in `output_web`.")
 
 
 def _load_csv(path: Path) -> pl.DataFrame:
-    return pl.read_csv(path)
+    return pl.read_csv(path, n_rows=MAX_PREVIEW_ROWS)
 
 
 def _render_table(df: pl.DataFrame, label: str) -> None:
@@ -96,9 +137,13 @@ with col1:
     if not kpi_files:
         st.warning("No KPI CSV files found. Run the pipeline first.")
     else:
+        st.caption(f"Preview mode: showing up to {MAX_PREVIEW_ROWS} rows per file.")
         kpi_names = [f.stem for f in kpi_files]
         selected_kpi = st.selectbox("Select KPI", kpi_names)
         kpi_path = kpi_dir / f"{selected_kpi}.csv"
+        file_size_mb = kpi_path.stat().st_size / (1024 * 1024)
+        if file_size_mb > 20:
+            st.info(f"Large file detected ({file_size_mb:.1f} MB). Loading preview only.")
         kpi_df = _load_csv(kpi_path)
         _render_table(kpi_df, selected_kpi)
 
@@ -120,6 +165,7 @@ with col2:
     if not validation_files:
         st.warning("No validation CSV files found. Run the pipeline first.")
     else:
+        st.caption(f"Preview mode: showing up to {MAX_PREVIEW_ROWS} rows per file.")
         validation_names = [f.stem for f in validation_files]
         selected_validation = st.selectbox("Select Validation", validation_names)
         validation_path = validation_dir / f"{selected_validation}.csv"

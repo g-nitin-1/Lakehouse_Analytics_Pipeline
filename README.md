@@ -59,6 +59,18 @@ python -m lakehouse_pipeline.cli run --input data/sample/orders.csv --output out
 streamlit run streamlit_app.py
 ```
 
+### Streamlit Cloud (Yellow Taxi Results)
+
+For stable cloud deployment, compute heavy outputs locally and publish curated artifacts:
+
+```bash
+python -m lakehouse_pipeline.cli run --input data/raw/yellow_tripdata_2024-01.parquet --output output_big --engine spark --full-refresh
+./scripts/prepare_web_outputs.sh output_big output_web
+```
+
+Then commit `output_web/` and deploy Streamlit.  
+The app defaults to `output_web` when available.
+
 ## Outputs
 
 - `output/bronze/`: raw + ingest metadata

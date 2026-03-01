@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8' />
+  <title>Data Quality Summary</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    table { border-collapse: collapse; margin-bottom: 24px; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 6px 8px; font-size: 12px; text-align: left; }
+    th { background: #f7f7f7; }
+  </style>
+</head>
+<body>
+  <h1>Data Quality Summary</h1>
+  <table><thead><tr><th>column</th><th>null_rate</th><th>distinct_count</th><th>outlier_count</th></tr></thead><tbody><tr><td>order_id</td><td>0.0</td><td>2895543</td><td>None</td></tr><tr><td>customer_id</td><td>0.0</td><td>3</td><td>None</td></tr><tr><td>product_id</td><td>0.0</td><td>26282</td><td>None</td></tr><tr><td>order_ts</td><td>0.0</td><td>1567520</td><td>None</td></tr><tr><td>updated_at</td><td>0.0</td><td>1566023</td><td>None</td></tr><tr><td>category</td><td>0.0</td><td>3</td><td>None</td></tr><tr><td>amount</td><td>0.0</td><td>16882</td><td>321644</td></tr><tr><td>quantity</td><td>0.0</td><td>9</td><td>0</td></tr><tr><td>source_file</td><td>0.0</td><td>1</td><td>None</td></tr><tr><td>ingest_time</td><td>0.0</td><td>1</td><td>None</td></tr></tbody></table>
+  <h2>Detailed Profile</h2>
+  <table><thead><tr><th>column</th><th>dtype</th><th>null_rate</th><th>distinct_count</th><th>top_category</th><th>min_value</th><th>max_value</th><th>outlier_count</th></tr></thead><tbody><tr><td>order_id</td><td>String</td><td>0.0</td><td>2895543</td><td>trip_|2|2002-12-31 22:59:39.000000000|170|170</td><td>None</td><td>None</td><td>None</td></tr><tr><td>customer_id</td><td>String</td><td>0.0</td><td>3</td><td>vendor_2</td><td>None</td><td>None</td><td>None</td></tr><tr><td>product_id</td><td>String</td><td>0.0</td><td>26282</td><td>route_-237-236</td><td>None</td><td>None</td><td>None</td></tr><tr><td>order_ts</td><td>Datetime(time_unit=&#x27;ns&#x27;, time_zone=None)</td><td>0.0</td><td>1567520</td><td>None</td><td>2002-12-31 17:29:39</td><td>2024-01-31 18:31:15</td><td>None</td></tr><tr><td>updated_at</td><td>Datetime(time_unit=&#x27;ns&#x27;, time_zone=None)</td><td>0.0</td><td>1566023</td><td>None</td><td>2002-12-31 17:35:41</td><td>2024-02-02 08:26:52</td><td>None</td></tr><tr><td>category</td><td>String</td><td>0.0</td><td>3</td><td>vendor_2</td><td>None</td><td>None</td><td>None</td></tr><tr><td>amount</td><td>Float64</td><td>0.0</td><td>16882</td><td>None</td><td>0.01</td><td>2225.3</td><td>321644</td></tr><tr><td>quantity</td><td>Int64</td><td>0.0</td><td>9</td><td>None</td><td>1</td><td>9</td><td>0</td></tr><tr><td>source_file</td><td>String</td><td>0.0</td><td>1</td><td>yellow_tripdata_2024-01.parquet</td><td>None</td><td>None</td><td>None</td></tr><tr><td>ingest_time</td><td>String</td><td>0.0</td><td>1</td><td>2026-03-01T17:02:53.413027+00:00</td><td>None</td><td>None</td><td>None</td></tr></tbody></table>
+</body>
+</html>

@@ -1,0 +1,3 @@
+source=output_big
+max_rows_per_csv=5000
+note=output_web is a curated subset for Streamlit Cloud browsing

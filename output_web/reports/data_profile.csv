@@ -1,0 +1,11 @@
+column,dtype,null_rate,distinct_count,top_category,min_value,max_value,outlier_count
+order_id,String,0.0,2895543,trip_|2|2002-12-31 22:59:39.000000000|170|170,,,
+customer_id,String,0.0,3,vendor_2,,,
+product_id,String,0.0,26282,route_-237-236,,,
+order_ts,"Datetime(time_unit='ns', time_zone=None)",0.0,1567520,,2002-12-31 17:29:39,2024-01-31 18:31:15,
+updated_at,"Datetime(time_unit='ns', time_zone=None)",0.0,1566023,,2002-12-31 17:35:41,2024-02-02 08:26:52,
+category,String,0.0,3,vendor_2,,,
+amount,Float64,0.0,16882,,0.01,2225.3,321644
+quantity,Int64,0.0,9,,1,9,0
+source_file,String,0.0,1,yellow_tripdata_2024-01.parquet,,,
+ingest_time,String,0.0,1,2026-03-01T17:02:53.413027+00:00,,,

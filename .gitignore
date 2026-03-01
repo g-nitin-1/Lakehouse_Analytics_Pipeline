@@ -2,6 +2,8 @@ Assignment_Project1_Lakehouse_Analytics_Pipeline.pdf
 .venv/
 output/
 output_*/
+!output_web/
+!output_web/**
 __pycache__/
 .pytest_cache/
 .ruff_cache/

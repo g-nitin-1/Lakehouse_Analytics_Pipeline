@@ -1,0 +1,11 @@
+column,null_rate,distinct_count,outlier_count
+order_id,0.0,2895543,
+customer_id,0.0,3,
+product_id,0.0,26282,
+order_ts,0.0,1567520,
+updated_at,0.0,1566023,
+category,0.0,3,
+amount,0.0,16882,321644
+quantity,0.0,9,0
+source_file,0.0,1,
+ingest_time,0.0,1,
